@@ -9,9 +9,14 @@ class HomeComponent extends Component
 {
     public $models;
     public $activeForm = false;
+    public $activeEdit = false;
     public $name;
     public $price;
     public $count;
+
+    public $editname;
+    public $editprice;
+    public $editcount;
 
     public function render()
     {
@@ -33,7 +38,6 @@ class HomeComponent extends Component
                 'count' => $this->count,
             ]);
             $this->activeForm = false;
-
         }
     }   
 
@@ -42,6 +46,24 @@ class HomeComponent extends Component
         if ($product) {
             $product->delete();
         }
+    }
+
+    public function edit()
+    {
+        $this->activeEdit = true;
+    }
+
+    public function update()
+    {
+        if(!empty($this->editname) && !empty($this->editprice) && !empty($this->editcount)){ 
+            Product::create([
+                'name' => $this->editname,
+                'price' => $this->editprice,
+                'count' => $this->editcount,
+            ]);
+            $this->activeEdit = false;
+        }
+
     }
     
 }
