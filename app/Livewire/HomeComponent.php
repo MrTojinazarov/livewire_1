@@ -2,25 +2,50 @@
 
 namespace App\Livewire;
 
+use App\Models\Category;
 use App\Models\Product;
 use Livewire\Component;
 
 class HomeComponent extends Component
 {
     public $models;
+    public $categories;
     public $activeForm = false;
     public $activeEdit = false;
-    public $name;
-    public $price;
-    public $count;
+    public $editFromProduct = false;
 
-    public $editname;
-    public $editprice;
-    public $editcount;
+    public $category_id;
+    public $name;
+    public $company;
+    public $country;
+    public $price;
+
+    public $searchCategory;
+    public $searchName;
+    public $searchCompany;
+    public $searchCountry;
+    public $searchPrice;
+
+    public $editCategory_id;
+    public $editName;
+    public $editCompany;
+    public $editCountry;
+    public $editPrice;
+
+    public function mount()
+    {
+        $this->all();
+    }
+
+    public function all()
+    {
+        $this->models = Product::all();
+        $this->categories = Category::all();
+        return [$this->models, $this->categories];
+    }
 
     public function render()
     {
-        $this->models = Product::all();
         return view('livewire.home-component');
     }
 
@@ -29,16 +54,31 @@ class HomeComponent extends Component
         $this->activeForm = true;
     }
 
+    public function cancel()
+    {
+        $this->activeForm = false;
+    }
+    
+
     public function save()
     {
-       if(!empty($this->name) && !empty($this->price) && !empty($this->count)){ 
+
+       if(!empty($this->category_id) && !empty($this->name) && !empty($this->company) && !empty($this->country) && !empty($this->price)){ 
             Product::create([
+                'category_id' => $this->category_id,
                 'name' => $this->name,
+                'company' => $this->company,
+                'country' => $this->country,
                 'price' => $this->price,
-                'count' => $this->count,
             ]);
             $this->activeForm = false;
         }
+        $this->category_id = '';
+        $this->name = '';
+        $this->company = '';
+        $this->country = '';
+        $this->price = '';
+        $this->all();
     }   
 
     public function delete(Product $product)
@@ -46,6 +86,7 @@ class HomeComponent extends Component
         if ($product) {
             $product->delete();
         }
+        $this->all();
     }
 
     public function edit()
@@ -64,6 +105,58 @@ class HomeComponent extends Component
             $this->activeEdit = false;
         }
 
+    }
+
+    public function searchColumns()
+    {
+        $this->models = Product::whereHas('category', function($query){
+            $query->where('id', 'LIKE', "{$this->searchCategory}%");
+        })
+        ->where('name', 'LIKE', "{$this->searchName}%")
+        ->where('company', 'LIKE', "{$this->searchCompany}%")
+        ->where('country', 'LIKE', "{$this->searchCountry}%")
+        ->where('price', 'LIKE', "{$this->searchPrice}%")->get();
+    }
+
+    public function refresh()
+    {
+        $this->searchCategory = '';
+        $this->searchName = '';
+        $this->searchCompany = '';
+        $this->searchCountry = '';
+        $this->searchPrice = '';
+        $this->all();
+    }
+
+    public function changeActive(Product $product)
+    {
+        $product->is_active = !$product->is_active;
+        $product->save();
+        $this->all();
+    }
+
+    public function editForm(Product $product)
+    {
+        $this->editFromProduct = $product->id;
+        $this->editCategory_id = $product->category_id;
+        $this->editName = $product->name;
+        $this->editCompany = $product->company;
+        $this->editCountry = $product->country;
+        $this->editPrice = $product->price;
+    }
+
+    public function updateForm()
+    {
+        $models = Product::findOrFail($this->editFromProduct);
+        $models->update([
+            'category_id' => $this->editCategory_id,
+            'name' => $this->editName,
+            'company' => $this->editCompany,
+            'country' => $this->editCountry,
+            'price' => $this->editPrice
+        ]);
+        $this->editFromProduct = false;
+        $this->all();
     }
     
 }

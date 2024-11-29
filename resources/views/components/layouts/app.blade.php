@@ -12,7 +12,20 @@
 
 <body style="background:lightgray;">
     <div class="container">
-        <div class="row mt-3">
+        <div class="row mt-2">
+            <div class="col-4">
+                <ul class="nav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/category"><h3>Categories</h3></a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/"><h3>Products</h3></a>
+                    </li>
+                </ul>
+            </div>
+            <hr>
+        </div>        
+        <div class="row">
             <div class="col-12">
                 {{ $slot }}
             </div>
